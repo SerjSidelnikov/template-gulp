@@ -13,6 +13,7 @@ const rename = require('gulp-rename');
 const imagemin = require('gulp-imagemin');
 const uglify = require('gulp-uglify');
 const del = require('del');
+const rollup = require('gulp-better-rollup');
 const sourcemaps = require('gulp-sourcemaps');
 const server = require('browser-sync').create();
 
@@ -67,7 +68,7 @@ gulp.task('uglify', function() {
       presets: ['env']
     }))
     .pipe(uglify())
-    .pipe(remane('script.min.js'))
+    .pipe(rename('script.min.js'))
     .pipe(sourcemaps.write())
     .pipe(gulp.dest('build/js'));
 });
