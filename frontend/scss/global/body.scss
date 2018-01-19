@@ -1,0 +1,15 @@
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-width: 320px;
+  height: 100%;
+  margin: 0;
+  font-family: $ff-base;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 18px;
+  color: $base-color;
+}

@@ -17,75 +17,64 @@ const rollup = require('gulp-better-rollup');
 const sourcemaps = require('gulp-sourcemaps');
 const server = require('browser-sync').create();
 
-gulp.task('style', function() {
-  return gulp.src('frontend/scss/style.scss')
-    .pipe(plumber())
-    .pipe(sourcemaps.init())
-    .pipe(sass())
-    .pipe(postcss([
-      mqpacker({sort: true}),
-      autoprefixer({browsers: ['last 2 versions']})
-    ]))
-    .pipe(minify())
-    .pipe(rename('style.min.css'))
-    .pipe(sourcemaps.write())
-    .pipe(gulp.dest('build/css'))
-    .pipe(server.stream());
-});
+gulp.task('style', () => gulp.src('frontend/scss/style.scss')
+  .pipe(plumber())
+  .pipe(sourcemaps.init())
+  .pipe(sass())
+  .pipe(postcss([
+    mqpacker({ sort: true }),
+    autoprefixer({ browsers: ['last 2 versions'] }),
+  ]))
+  .pipe(minify())
+  .pipe(rename('style.min.css'))
+  .pipe(sourcemaps.write())
+  .pipe(gulp.dest('build/css'))
+  .pipe(server.stream()));
 
-gulp.task('pug', function() {
-  return gulp.src('frontend/pug/pages/*.pug')
-    .pipe(plumber())
-    .pipe(pug({pretty: true}))
-    .pipe(gulp.dest('build'))
-    .pipe(server.stream());
-});
+gulp.task('pug', () => gulp.src('frontend/pug/pages/*.pug')
+  .pipe(plumber())
+  .pipe(pug({ pretty: true }))
+  .pipe(gulp.dest('build'))
+  .pipe(server.stream()));
 
-gulp.task('copy', function() {
-  return gulp.src([
-    'frontend/image/**'
-  ], {
-    base: 'frontend',
-    since: gulp.lastRun('copy')
-  })
-    .pipe(gulp.dest('build'));
-});
+gulp.task('copy', () => gulp.src([
+  'frontend/images/**',
+  'frontend/fonts/**',
+], {
+  base: 'frontend',
+  since: gulp.lastRun('copy'),
+})
+  .pipe(gulp.dest('build')));
 
-gulp.task('images', function() {
-  return gulp.src('build/image/**/*.{png,jpg,gif}')
-    .pipe(imagemin([
-      imagemin.optipng({optimizationLevel: 3}),
-      imagemin.jpegtran({progressive: true})
-    ]))
-    .pipe(gulp.dest('build/image'));
-});
+gulp.task('images', () => gulp.src('build/image/**/*.{png,jpg,gif}')
+  .pipe(imagemin([
+    imagemin.optipng({ optimizationLevel: 3 }),
+    imagemin.jpegtran({ progressive: true }),
+  ]))
+  .pipe(gulp.dest('build/image')));
 
-gulp.task('uglify', function() {
-  return gulp.src('frontend/js/main.js')
-    .pipe(sourcemaps.init())
-    .pipe(rollup({}, 'iife'))
-    .pipe(babel({
-      presets: ['env']
-    }))
-    .pipe(uglify())
-    .pipe(rename('script.min.js'))
-    .pipe(sourcemaps.write())
-    .pipe(gulp.dest('build/js'));
-});
+gulp.task('uglify', () => gulp.src('frontend/js/main.js')
+  .pipe(sourcemaps.init())
+  .pipe(rollup({}, 'iife'))
+  .pipe(babel({
+    presets: ['env'],
+  }))
+  .pipe(uglify())
+  .pipe(rename('script.min.js'))
+  .pipe(sourcemaps.write())
+  .pipe(gulp.dest('build/js')));
 
-gulp.task('clean', function() {
-  return del('build');
-});
+gulp.task('clean', () => del('build'));
 
-gulp.task('watch', function() {
+gulp.task('watch', () => {
   gulp.watch('frontend/scss/**/*.*', gulp.series('style'));
 
   gulp.watch('frontend/pug/**/*.pug', gulp.series('pug'));
 });
 
-gulp.task('serve', function() {
+gulp.task('serve', () => {
   server.init({
-    server: 'build'
+    server: 'build',
   });
 
   server.watch('build/**/*.*').on('change', server.reload);
