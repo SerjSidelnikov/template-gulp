@@ -1,4 +1,5 @@
 @import "../../node_modules/normalize.scss/normalize.scss";
 
-@import "global/variable.scss";
-@import "global/body.scss";
+@import "global/variable";
+@import "global/mixins";
+@import "global/body";

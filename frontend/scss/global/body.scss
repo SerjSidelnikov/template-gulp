@@ -20,30 +20,3 @@ body {
 .page {
   flex-grow: 1;
 }
-
-@mixin container() {
-
-  @media (min-width: $tablet) {
-
-  }
-
-  @media (min-width: $desktop) {
-
-  }
-}
-
-@mixin title() {
-
-  @media (min-width: $tablet) {
-
-  }
-
-  @media (min-width: $desktop) {
-
-  }
-}
-
-@mixin text() {
-  word-wrap: break-word;
-  hyphens: auto;
-}

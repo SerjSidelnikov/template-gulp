@@ -1,107 +1,132 @@
-'use strict';
+const del = require(`del`);
+const gulp = require(`gulp`);
+const pug = require(`gulp-pug`);
+const sass = require(`gulp-sass`);
+const plumber = require(`gulp-plumber`);
+const postcss = require(`gulp-postcss`);
+const autoprefixer = require(`autoprefixer`);
+const server = require(`browser-sync`).create();
+const mqpacker = require(`css-mqpacker`);
+const minify = require(`gulp-csso`);
+const rename = require(`gulp-rename`);
+const imagemin = require(`gulp-imagemin`);
+const rollup = require(`gulp-better-rollup`);
+const sourcemaps = require(`gulp-sourcemaps`);
+const mocha = require(`gulp-mocha`);
+const commonjs = require(`rollup-plugin-commonjs`);
+const babel = require(`rollup-plugin-babel`);
+const resolve = require(`rollup-plugin-node-resolve`);
+const uglify = require(`gulp-uglify`);
 
-const gulp = require('gulp');
-const babel = require('gulp-babel');
-const pug = require('gulp-pug');
-const sass = require('gulp-sass');
-const plumber = require('gulp-plumber');
-const postcss = require('gulp-postcss');
-const autoprefixer = require('autoprefixer');
-const minify = require('gulp-csso');
-const rename = require('gulp-rename');
-const imagemin = require('gulp-imagemin');
-const webp = require('gulp-webp');
-const uglify = require('gulp-uglify');
-const del = require('del');
-const sourcemaps = require('gulp-sourcemaps');
-const server = require('browser-sync').create();
-const webpack = require('webpack');
-const webpackStream = require('webpack-stream');
-
-gulp.task('style', () => gulp.src('frontend/scss/style.scss')
-  .pipe(plumber())
-  .pipe(sourcemaps.init())
-  .pipe(sass())
-  .pipe(postcss([
-    autoprefixer({ browsers: ['last 2 versions'] }),
-  ]))
-  .pipe(minify())
-  .pipe(rename('style.min.css'))
-  .pipe(sourcemaps.write())
-  .pipe(gulp.dest('build/css'))
-  .pipe(server.stream()));
-
-gulp.task('pug', () => gulp.src('frontend/pug/pages/*.pug')
-  .pipe(plumber())
-  .pipe(pug({ pretty: true }))
-  .pipe(gulp.dest('build'))
-  .pipe(server.stream()));
-
-gulp.task('copy', () => gulp.src([
-  'frontend/image/**',
-  'frontend/fonts/**',
-  'frontend/vendors/**',
-], {
-  base: 'frontend',
-  since: gulp.lastRun('copy'),
-})
-  .pipe(gulp.dest('build')));
-
-gulp.task('images', () => gulp.src('build/image/**/*.{png,jpg,gif,svg}')
-  .pipe(imagemin([
-    imagemin.optipng({ optimizationLevel: 3 }),
-    imagemin.jpegtran({ progressive: true }),
-    imagemin.svgo(),
-  ]))
-  .pipe(gulp.dest('build/image')));
-
-gulp.task('webp', () => gulp.src('build/image/**/*.{jpg, png}')
-  .pipe(webp({ quality: 90 }))
-  .pipe(gulp.dest('build/image')));
-
-gulp.task('js', () => gulp.src('frontend/js/main.js')
-  .pipe(sourcemaps.init())
-  .pipe(webpackStream({
-    output: {
-      filename: 'main.js'
-    },
-    module: {
-      rules: [
-        {
-          test: /\.(js)$/,
-          exclude: /(node_modules)/,
-          loader: 'babel-loader',
-          query: {
-            presets: ['env']
-          }
-        }
+gulp.task(`style`, () => {
+  return gulp.src(`frontend/scss/style.scss`).
+  pipe(plumber()).
+  pipe(sourcemaps.init()).
+  pipe(sass()).
+  pipe(postcss([
+    autoprefixer({
+      browsers: [
+        `last 1 version`,
+        `last 2 Chrome versions`,
+        `last 2 Firefox versions`,
+        `last 2 Opera versions`,
+        `last 2 Edge versions`
       ]
-    }
-  }))
-  .pipe(uglify())
-  .pipe(rename('script.min.js'))
-  .pipe(sourcemaps.write())
-  .pipe(gulp.dest('build/js'))
-  .pipe(server.stream()));
-
-gulp.task('clean', () => del('build'));
-
-gulp.task('watch', () => {
-  gulp.watch('frontend/scss/**/*.*', gulp.series('style'));
-
-  gulp.watch('frontend/pug/**/*.pug', gulp.series('pug'));
-
-  gulp.watch('frontend/js/**/*.js', gulp.series('js'));
+    }),
+    mqpacker({sort: true})
+  ])).
+  pipe(gulp.dest(`build/css`)).
+  pipe(server.stream()).
+  pipe(minify()).
+  pipe(rename(`style.min.css`)).
+  pipe(sourcemaps.write(``)).
+  pipe(gulp.dest(`build/css`));
 });
 
-gulp.task('serve', () => {
+gulp.task(`pug`, () => gulp.src(`frontend/pug/pages/*.pug`)
+  .pipe(plumber())
+  .pipe(pug({pretty: true}))
+  .pipe(gulp.dest(`build`))
+  .pipe(server.stream()));
+
+gulp.task(`scripts`, () => {
+  return gulp.src(`frontend/js/main.js`)
+    .pipe(plumber())
+    .pipe(sourcemaps.init())
+    .pipe(rollup({
+      plugins: [
+        resolve({browser: true}),
+        commonjs(),
+        babel({
+          babelrc: false,
+          exclude: `node_modules/**`,
+          presets: [`@babel/env`]
+        })
+      ]
+    }, `iife`))
+    .pipe(uglify())
+    .pipe(sourcemaps.write(``))
+    .pipe(gulp.dest(`build/js`));
+});
+
+gulp.task(`imagemin`, [`copy`], () => {
+  return gulp.src(`build/images/**/*.{jpg,jpeg,png,gif,svg}`).
+  pipe(imagemin([
+    imagemin.optipng({optimizationLevel: 3}),
+    imagemin.jpegtran({progressive: true}),
+    imagemin.svgo(),
+  ])).
+  pipe(gulp.dest(`build/images`));
+});
+
+gulp.task(`copy`, [`pug`, `scripts`, `style`], () => {
+  return gulp.src([
+    `frontend/fonts/**/*.{woff,woff2}`,
+    `frontend/images/**/*.*`
+  ], {base: `frontend`}).
+  pipe(gulp.dest(`build`));
+});
+
+gulp.task(`clean`, () => {
+  return del(`build`);
+});
+
+gulp.task(`js-watch`, [`scripts`], (done) => {
+  server.reload();
+  done();
+});
+
+gulp.task(`serve`, [`assemble`], () => {
   server.init({
-    server: 'build',
+    server: `./build`,
+    notify: false,
+    open: true,
+    port: 3502,
+    ui: false
   });
 
-  server.watch('build/**/*.*').on('change', server.reload);
+  gulp.watch(`frontend/sass/**/*.{scss,sass}`, [`style`]);
+  gulp.watch(`frontend/pug/**/*.pug`, [`pug`]);
+  gulp.watch(`frontend/js/**/*.js`, [`js-watch`]);
+  gulp.watch(`frontend/images/**/*.*`, [`copy`]);
 });
 
-gulp.task('build', gulp.series('clean', gulp.parallel('style', 'pug', 'copy', 'images', 'webp', 'js')));
+gulp.task(`assemble`, [`clean`], () => {
+  gulp.start(`copy`, `style`);
+});
 
-gulp.task('dev', gulp.series('build', gulp.parallel('watch', 'serve')));
+gulp.task(`build`, [`assemble`], () => {
+  gulp.start(`imagemin`);
+});
+
+gulp.task(`test`, () => {
+  return gulp.src([`frontend/js/**/*.test.js`])
+    .pipe(rollup({
+      plugins: [
+        commonjs()
+      ]}, `cjs`))
+    .pipe(gulp.dest(`build/test`))
+    .pipe(mocha({
+      reporter: `spec`
+    }));
+});
