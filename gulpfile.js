@@ -105,7 +105,7 @@ gulp.task(`serve`, [`assemble`], () => {
     ui: false
   });
 
-  gulp.watch(`frontend/sass/**/*.{scss,sass}`, [`style`]);
+  gulp.watch(`frontend/scss/**/*.{scss,sass}`, [`style`]);
   gulp.watch(`frontend/pug/**/*.pug`, [`pug`]);
   gulp.watch(`frontend/js/**/*.js`, [`js-watch`]);
   gulp.watch(`frontend/images/**/*.*`, [`copy`]);
