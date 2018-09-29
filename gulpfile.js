@@ -40,7 +40,8 @@ gulp.task(`style`, () => {
   pipe(minify()).
   pipe(rename(`style.min.css`)).
   pipe(sourcemaps.write(``)).
-  pipe(gulp.dest(`build/css`));
+  pipe(gulp.dest(`build/css`)).
+  pipe(server.stream());
 });
 
 gulp.task(`pug`, () => gulp.src(`frontend/pug/pages/*.pug`)
@@ -105,10 +106,10 @@ gulp.task(`serve`, [`assemble`], () => {
     ui: false
   });
 
-  gulp.watch(`frontend/scss/**/*.{scss,sass}`, [`style`]);
-  gulp.watch(`frontend/pug/**/*.pug`, [`pug`]);
-  gulp.watch(`frontend/js/**/*.js`, [`js-watch`]);
-  gulp.watch(`frontend/images/**/*.*`, [`copy`]);
+  gulp.watch(`frontend/scss/**`, [`style`]);
+  gulp.watch(`frontend/pug/**`, [`pug`]);
+  gulp.watch(`frontend/js/**`, [`js-watch`]);
+  gulp.watch(`frontend/images/**`, [`copy`]);
 });
 
 gulp.task(`assemble`, [`clean`], () => {
