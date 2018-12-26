@@ -1,22 +1,22 @@
 @mixin container() {
-
+  // mobile
   @media (min-width: $tablet) {
-
+    // tablet
   }
 
   @media (min-width: $desktop) {
-
+    // desktop
   }
 }
 
 @mixin title() {
-
+  // mobile
   @media (min-width: $tablet) {
-
+    // tablet
   }
 
   @media (min-width: $desktop) {
-
+    // desktop
   }
 }
 
