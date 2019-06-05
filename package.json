@@ -31,9 +31,10 @@
     "gulp-sass": "4.0.2",
     "gulp-uglify": "3.0.2",
     "normalize.scss": "0.1.0",
+    "rollup": "1.13.1",
     "rollup-plugin-babel": "4.3.2",
     "rollup-plugin-commonjs": "9.3.4",
-    "rollup-plugin-node-resolve": "",
+    "rollup-plugin-node-resolve": "5.0.1",
     "stylelint": "10.0.1",
     "stylelint-config-htmlacademy": "0.1.3"
   },
