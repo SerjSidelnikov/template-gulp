@@ -11,3 +11,4 @@ Thumbs.db
 css/
 build/
 yarn-error.log
+package-lock.json

@@ -6,7 +6,6 @@ const plumber = require(`gulp-plumber`);
 const postcss = require(`gulp-postcss`);
 const autoprefixer = require(`autoprefixer`);
 const server = require(`browser-sync`).create();
-const mqpacker = require(`css-mqpacker`);
 const minify = require(`gulp-csso`);
 const rename = require(`gulp-rename`);
 const imagemin = require(`gulp-imagemin`);
@@ -14,18 +13,13 @@ const rollup = require(`gulp-better-rollup`);
 const commonjs = require(`rollup-plugin-commonjs`);
 const babel = require(`rollup-plugin-babel`);
 const resolve = require(`rollup-plugin-node-resolve`);
-const uglify = require(`gulp-uglify`);
+const uglify = require(`gulp-uglify-es`).default;
 
 gulp.task(`style`, () => gulp.src(`frontend/scss/style.scss`, {sourcemaps: true})
   .pipe(plumber())
   .pipe(sass())
   .pipe(postcss([
-    autoprefixer({
-      browsers: [
-        `> 1%`,
-      ]
-    }),
-    mqpacker({sort: true})
+    autoprefixer(),
   ]))
   .pipe(minify())
   .pipe(rename(`style.css`))
@@ -47,7 +41,8 @@ gulp.task(`scripts`, () => gulp.src(`frontend/js/main.js`, {sourcemaps: true})
       babel({
         babelrc: false,
         exclude: `node_modules/**`,
-        presets: [`@babel/env`]
+        presets: [`@babel/preset-env`],
+        plugins: [`syntax-async-functions`]
       })
     ]
   }, `iife`))
@@ -58,7 +53,7 @@ gulp.task(`scripts`, () => gulp.src(`frontend/js/main.js`, {sourcemaps: true})
 gulp.task(`imagemin`, () => gulp.src(`build/images/**/*.{jpg,jpeg,png,gif,svg}`)
   .pipe(imagemin([
     imagemin.optipng({optimizationLevel: 3}),
-    imagemin.jpegtran({progressive: true}),
+    imagemin.mozjpeg({quality: 70, progressive: true}),
     imagemin.svgo(),
   ]))
   .pipe(gulp.dest(`build/images`))
@@ -66,7 +61,8 @@ gulp.task(`imagemin`, () => gulp.src(`build/images/**/*.{jpg,jpeg,png,gif,svg}`)
 
 gulp.task(`copy`, () => gulp.src([
   `frontend/fonts/**/*.{woff,woff2}`,
-  `frontend/images/**/*.*`], {base: `frontend`, since: gulp.lastRun(`copy`)})
+  `frontend/images/**/*.*`,
+  `frontend/vendors/**/*.*`], {base: `frontend`, since: gulp.lastRun(`copy`)})
   .pipe(gulp.dest(`build`))
 );
 
